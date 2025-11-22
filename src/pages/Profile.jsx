@@ -3,6 +3,7 @@ import { db, auth } from "../firebase";
 import { doc, getDoc, updateDoc, collection, getDocs } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { useAuth } from "../context/AuthContext";
+import Spinner from "../components/Spinner";
 
 export default function Profile() {
   const { currentUser } = useAuth();
@@ -55,7 +56,14 @@ export default function Profile() {
     }
   };
 
-  if (loading) return <div className="container">Loading profile...</div>;
+  // Replace the loading text div
+  if (loading) return (
+    <div className="container">
+        <div className="form-card">
+            <Spinner />
+        </div>
+    </div>
+  );
 
   return (
     <div className="container">

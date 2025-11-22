@@ -3,6 +3,7 @@ import { db } from "../firebase";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import Spinner from "../components/Spinner"; // Import Spinner
 
 export default function MyActivity() {
   const { currentUser } = useAuth();
@@ -19,18 +20,33 @@ export default function MyActivity() {
       orderBy("createdAt", "desc")
     );
 
+    // The onSnapshot listener fires immediately with initial data (or empty data)
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       // Filter client-side for those that HAVE a response
       const respondedOnly = data.filter(item => item.response && item.response.trim() !== "");
+      
       setMyFeedbacks(respondedOnly);
+      // IMPORTANT: Once data is received (even if empty), stop loading.
       setLoading(false);
+    }, (error) => {
+       console.error("Error fetching activity:", error);
+       // Even if there's an error, stop loading so it doesn't get stuck
+       setLoading(false);
     });
 
     return unsubscribe;
   }, [currentUser]);
 
-  if (loading) return <div className="container">Loading activity...</div>;
+  // STATE 1: LOADING
+  if (loading) {
+    return (
+      <div className="container">
+        <h2 className="section-title">🔔 My Notifications</h2>
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="container">
@@ -40,17 +56,24 @@ export default function MyActivity() {
       </p>
 
       <div className="feed-grid">
+        {/* STATE 2: NO DATA */}
         {myFeedbacks.length === 0 ? (
-          <div className="card" style={{gridColumn: '1 / -1', textAlign: 'center'}}>
-            <p>No new notifications.</p>
-            <Link to="/submit" className="primary-btn" style={{display:'inline-block', width:'auto', marginTop:'10px', textDecoration:'none'}}>Submit Feedback</Link>
+          <div className="card" style={{gridColumn: '1 / -1', textAlign: 'center', padding: '40px'}}>
+            <h3>No activity yet</h3>
+            <p style={{color: 'var(--text-secondary)', marginBottom: '20px'}}>
+              When an admin replies to your feedback, it will appear here.
+            </p>
+            <Link to="/submit" className="primary-btn" style={{display:'inline-block', width:'auto', textDecoration:'none'}}>
+              Submit New Feedback
+            </Link>
           </div>
         ) : (
+          // STATE 3: DATA EXISTS
           myFeedbacks.map(item => (
             <div key={item.id} className="card" style={{borderLeftColor: 'var(--success)'}}>
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                 <span className="badge resolved">Response Received</span>
-                <small>{new Date(item.createdAt?.toDate()).toLocaleDateString()}</small>
+                <small>{item.createdAt ? new Date(item.createdAt.toDate()).toLocaleDateString() : ''}</small>
               </div>
               
               <h3 style={{marginTop: '10px'}}>{item.content}</h3>
@@ -63,7 +86,7 @@ export default function MyActivity() {
               </div>
               
               <div style={{marginTop: '15px', textAlign: 'right'}}>
-                <Link to="/" style={{color: 'var(--primary)', fontSize: '0.9rem'}}>View in Feed &rarr;</Link>
+                <Link to="/home" style={{color: 'var(--primary)', fontSize: '0.9rem'}}>View in Feed &rarr;</Link>
               </div>
             </div>
           ))

@@ -15,11 +15,15 @@ import MasterAdmin from "./pages/MasterAdmin";
 import Profile from "./pages/Profile";
 import MyActivity from "./pages/MyActivity";
 import Landing from "./pages/Landing";
-import PrivacyPolicy from "./pages/PrivacyPolicy"; // <--- IMPORT THIS
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Spinner from "./components/Spinner";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { currentUser, userRole, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
+  
+  // Use Spinner instead of div text
+  if (loading) return <Spinner fullScreen={true} />;
+  
   if (!currentUser) return <Navigate to="/" />;
   if (userRole === 'tester') return children;
   if (allowedRoles && !allowedRoles.includes(userRole)) return <Navigate to="/home" />;
@@ -28,7 +32,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const PublicRoute = () => {
     const { currentUser, loading } = useAuth();
-    if (loading) return <div>Loading...</div>;
+    
+    // Use Spinner instead of div text
+    if (loading) return <Spinner fullScreen={true} />;
+    
     if (currentUser) return <Navigate to="/home" />;
     return <Landing />;
 }
