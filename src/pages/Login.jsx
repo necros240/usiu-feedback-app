@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signInWithEmailAndPassword
+} from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore"; // <-- Ensure getDoc is imported
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Import useAuth
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -11,53 +16,112 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const navigate = useNavigate();
-  
-  // 1. Get current user status
   const { currentUser } = useAuth();
 
-  // 2. Auto-redirect if already logged in
   useEffect(() => {
-    if (currentUser) {
-      navigate("/");
-    }
+    if (currentUser) navigate("/home");
   }, [currentUser, navigate]);
 
+  // --- Existing Email/Password Handler ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (isRegistering) {
         const res = await createUserWithEmailAndPassword(auth, email, password);
+        // Create user document
         await setDoc(doc(db, "users", res.user.uid), {
           uid: res.user.uid,
           email,
           displayName: name,
-          role: "student"
+          role: "student",
+          affiliation: "None"
         });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      // Redirection is handled by the useEffect above
     } catch (error) {
       alert(error.message);
     }
   };
 
+  // --- NEW: Google Sign-In Handler ---
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if this user already exists in Firestore
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        // If first time logging in, create their profile
+        await setDoc(docRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName, // Google provides their name automatically
+          role: "student", // Default role
+          photoURL: user.photoURL, // Google provides their profile pic
+          affiliation: "None"
+        });
+      }
+      // If they already exist, the useEffect handles redirect
+    } catch (error) {
+      console.error("Error with Google Sign-In", error);
+      alert(error.message);
+    }
+  };
+
   return (
-    <div className="auth-container">
-      <h2 style={{textAlign: 'center', color: 'var(--primary)', marginBottom: '20px'}}>
-        {isRegistering ? "Register Account" : "Student Login"}
-      </h2>
-      <form onSubmit={handleSubmit}>
-        {isRegistering && (
-          <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
-        )}
-        <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit" className="primary-btn">{isRegistering ? "Register" : "Login"}</button>
-      </form>
-      <p onClick={() => setIsRegistering(!isRegistering)} style={{marginTop: '15px', cursor: 'pointer', color: 'var(--primary)', textAlign:'center', fontWeight: 'bold'}}>
-        {isRegistering ? "Already have an account? Login" : "No account? Register"}
-      </p>
+    <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+      <div className="form-card">
+        <h2 style={{ textAlign: 'center', color: 'var(--primary)', marginBottom: '20px' }}>
+          {isRegistering ? "Register Account" : "Student Login"}
+        </h2>
+
+        <form onSubmit={handleSubmit}>
+          {isRegistering && (
+            <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
+          )}
+          <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <button type="submit" className="primary-btn">{isRegistering ? "Register" : "Login"}</button>
+        </form>
+
+        {/* --- NEW: Google Button --- */}
+        <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+          <div style={{ flex: 1, height: '1px', background: '#ccc' }}></div>
+          <span style={{ padding: '0 10px', color: '#888' }}>OR</span>
+          <div style={{ flex: 1, height: '1px', background: '#ccc' }}></div>
+        </div>
+
+        <button
+          onClick={handleGoogleLogin}
+          style={{
+            width: '100%',
+            padding: '12px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            background: 'white',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            fontWeight: 'bold',
+            color: '#555'
+          }}
+        >
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: '20px' }} />
+          Sign in with Google
+        </button>
+        {/* -------------------------- */}
+
+        <p onClick={() => setIsRegistering(!isRegistering)} style={{ marginTop: '20px', cursor: 'pointer', color: 'var(--primary)', textAlign: 'center', fontWeight: 'bold' }}>
+          {isRegistering ? "Already have an account? Login" : "No account? Register"}
+        </p>
+      </div>
     </div>
   );
 }
