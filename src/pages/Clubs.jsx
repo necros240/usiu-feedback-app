@@ -8,17 +8,16 @@ export default function Clubs() {
   const [posts, setPosts] = useState([]);
   const [myAffiliation, setMyAffiliation] = useState("");
   
-  // Form States
   const [showForm, setShowForm] = useState(false);
   const [postType, setPostType] = useState("Event"); 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
   
-  // NEW: Target Audience State
-  const [audience, setAudience] = useState("Public"); // 'Public' or 'Members'
+  
+  const [audience, setAudience] = useState("Public"); 
 
-  // Editing & Comment States
+  
   const [editingId, setEditingId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
@@ -28,7 +27,7 @@ export default function Clubs() {
 
   const canPost = ["club", "tester", "master"].includes(userRole);
 
-  // 1. Fetch User's Affiliation (to know which club they are in)
+  
   useEffect(() => {
     if(currentUser) {
       getDoc(doc(db, "users", currentUser.uid)).then(snap => {
@@ -37,14 +36,14 @@ export default function Clubs() {
     }
   }, [currentUser]);
 
-  // 2. Fetch Posts
+  
   useEffect(() => {
     const q = query(collection(db, "club_posts"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => setPosts(snap.docs.map(d => ({id: d.id, ...d.data()}))));
     return unsub;
   }, []);
 
-  // --- Creation Logic ---
+  
   const handleOptionChange = (index, value) => {
     const newOptions = [...pollOptions];
     newOptions[index] = value;
@@ -55,7 +54,7 @@ export default function Clubs() {
   const handlePost = async (e) => {
     e.preventDefault();
     
-    // If posting as Members Only, we attach the author's current club
+    
     const targetClub = audience === "Members" ? myAffiliation : "Public";
 
     const newPost = {
@@ -65,8 +64,8 @@ export default function Clubs() {
       likes: [], 
       comments: [], 
       type: postType,
-      audience: audience, // 'Public' or 'Members'
-      targetClub: targetClub // e.g., "Chess Club" or "Public"
+      audience: audience, 
+      targetClub: targetClub 
     };
 
     if (postType === "Event") {
@@ -81,20 +80,19 @@ export default function Clubs() {
     setShowForm(false); setTitle(""); setContent(""); setPollOptions(["", ""]);
   };
 
-  // --- Filter Logic ---
+  
   const filteredPosts = posts.filter(post => {
-    // 1. Public posts are seen by everyone
+    
     if (!post.audience || post.audience === "Public") return true;
     
-    // 2. Members Only posts:
-    // Visible if I am the author OR my affiliation matches the post's target club
+    
     if (post.audience === "Members") {
       return post.authorId === currentUser.uid || myAffiliation === post.targetClub;
     }
     return true;
   });
 
-  // --- Edit & Interactions (Same as before) ---
+  
   const startEdit = (post) => {
     setEditingId(post.id);
     setEditTitle(post.title);
@@ -146,7 +144,7 @@ export default function Clubs() {
     <div className="container">
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
         <h1>Club Activities</h1>
-        {/* Show user their club status */}
+        
         {myAffiliation ? <span className="badge resolved">My Club: {myAffiliation}</span> : <span className="badge new">No Club Selected</span>}
       </div>
       
@@ -164,7 +162,7 @@ export default function Clubs() {
               <button type="button" onClick={() => setPostType("Poll")} style={{background: postType === "Poll" ? 'var(--primary)' : '#ddd', color: postType === "Poll" ? 'white' : '#333', padding: '5px 15px', border: 'none', borderRadius: '4px', cursor: 'pointer'}}>Poll</button>
             </div>
             
-            {/* NEW: Audience Toggle */}
+            
             <select value={audience} onChange={(e) => setAudience(e.target.value)} style={{width: 'auto', margin: 0}}>
               <option value="Public">🌍 Public (Everyone)</option>
               <option value="Members">🔒 Members Only ({myAffiliation})</option>
@@ -197,7 +195,7 @@ export default function Clubs() {
               {post.audience === "Members" && <span style={{fontSize: '0.8rem', fontWeight:'bold', color: 'var(--primary)'}}>🔒 Members Only ({post.targetClub})</span>}
             </div>
 
-            {/* ... (Rest of card content remains identical to previous version) ... */}
+            
             {editingId === post.id ? (
               <div style={{marginTop: '10px', marginBottom: '10px', padding: '10px', background: '#f9f9f9', border: '1px dashed #ccc'}}>
                 <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} style={{marginBottom: '5px'}} />

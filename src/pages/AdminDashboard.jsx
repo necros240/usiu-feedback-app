@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore"; // Added addDoc
+import { collection, onSnapshot, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore"; 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
@@ -8,20 +8,20 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 export default function AdminDashboard() {
   const [feedbackData, setFeedbackData] = useState([]);
   
-  // NEW: Club Management States
+  
   const [clubs, setClubs] = useState([]); 
   const [newClubName, setNewClubName] = useState(""); 
 
   const [responseText, setResponseText] = useState({});
-  const [filter, setFilter] = useState("all"); // 'all' or 'reported'
+  const [filter, setFilter] = useState("all"); 
 
   useEffect(() => {
-    // 1. Listen to Feedback (Existing)
+    
     const unsubFeed = onSnapshot(collection(db, "feedback"), (snap) => {
       setFeedbackData(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    // 2. Listen to Clubs (NEW)
+    
     const unsubClubs = onSnapshot(collection(db, "clubs"), (snap) => {
       setClubs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
     return () => { unsubFeed(); unsubClubs(); };
   }, []);
 
-  // --- Process Data for Charts ---
+ 
   const categoryStats = feedbackData.reduce((acc, curr) => {
     const found = acc.find(a => a.name === curr.category);
     if (found) found.count += 1;
@@ -42,10 +42,9 @@ export default function AdminDashboard() {
     { name: "Resolved", value: feedbackData.filter(f => f.status === 'Resolved').length }
   ];
 
-  // Calculate Reports
+
   const reportedCount = feedbackData.filter(f => f.reports && f.reports.length > 0).length;
 
-  // --- Handlers ---
 
   const handleResolve = async (id) => {
     const response = responseText[id] || "Thank you for the feedback. We have looked into it.";
@@ -56,14 +55,12 @@ export default function AdminDashboard() {
     setResponseText(prev => ({...prev, [id]: ""}));
   };
   
-  // Delete post (Existing)
   const handleDelete = async (id) => {
     if(window.confirm("Are you sure you want to PERMANENTLY delete this feedback?")) {
         await deleteDoc(doc(db, "feedback", id));
     }
   };
 
-  // NEW: Handle Adding a Club
   const handleAddClub = async (e) => {
     e.preventDefault();
     if (!newClubName.trim()) return;
@@ -71,14 +68,13 @@ export default function AdminDashboard() {
     setNewClubName("");
   };
 
-  // NEW: Handle Deleting a Club
   const handleDeleteClub = async (id) => {
     if(window.confirm("Delete this club? Users in this club will need to update their profile manually.")) {
       await deleteDoc(doc(db, "clubs", id));
     }
   };
 
-  // Filter Logic
+
   const filteredData = feedbackData.filter(item => {
     if (filter === "reported") return item.reports && item.reports.length > 0;
     return true;
@@ -88,7 +84,6 @@ export default function AdminDashboard() {
     <div className="container">
       <h1>Admin Dashboard</h1>
 
-      {/* --- NEW SECTION: Manage Official Clubs --- */}
       <div className="card" style={{marginBottom: '30px', borderLeftColor: 'var(--accent)'}}>
         <h3>🏛️ Manage Official Clubs</h3>
         <p>Create clubs here. Users can then select them in their Profile Settings.</p>
@@ -122,7 +117,6 @@ export default function AdminDashboard() {
         </div>
       </div>
       
-      {/* --- Charts Section --- */}
       <div className="dashboard-stats">
         <div className="chart-container">
           <h4>Feedback by Category</h4>
@@ -146,7 +140,6 @@ export default function AdminDashboard() {
           </PieChart>
         </div>
         
-        {/* Reported Stats Card */}
         <div className="chart-container" style={{justifyContent: 'center', textAlign: 'center'}}>
             <h1 style={{fontSize: '4rem', color: reportedCount > 0 ? 'var(--danger)' : '#ccc', margin: 0}}>{reportedCount}</h1>
             <p>Reported Items</p>
@@ -154,7 +147,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* --- Feedback Table Section --- */}
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '30px'}}>
         <h3>Feedback Management</h3>
         <div style={{display: 'flex', gap: '10px'}}>
@@ -230,7 +222,6 @@ export default function AdminDashboard() {
                     </div>
                     )}
                     
-                    {/* Delete Button */}
                     <button 
                         onClick={() => handleDelete(item.id)}
                         style={{background: 'none', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '2px 5px', borderRadius: '4px', cursor:'pointer', fontSize: '0.8rem', width: 'fit-content'}}

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 export default function SubmitFeedback() {
   const [category, setCategory] = useState("Facilities");
   const [content, setContent] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(false); // NEW State
+  const [isAnonymous, setIsAnonymous] = useState(false); 
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
@@ -33,9 +33,9 @@ export default function SubmitFeedback() {
       content,
       status: "New",
       authorId: currentUser.uid,
-      authorName: authorName, // Real name is ALWAYS saved for Admins
+      authorName: authorName, 
       authorAffiliation: authorAffiliation,
-      isAnonymous: isAnonymous, // NEW Flag
+      isAnonymous: isAnonymous, 
       createdAt: serverTimestamp(),
       response: "",
       likes: [],
@@ -67,7 +67,7 @@ export default function SubmitFeedback() {
           placeholder="Describe your issue or suggestion..." 
         />
 
-        {/* NEW Anonymous Checkbox */}
+        
         <div style={{display: 'flex', alignItems: 'center', gap: '10px', margin: '15px 0'}}>
           <input 
             type="checkbox" 

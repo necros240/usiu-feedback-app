@@ -3,7 +3,7 @@ import { db } from "../firebase";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import Spinner from "../components/Spinner"; // Import Spinner
+import Spinner from "../components/Spinner"; 
 
 export default function MyActivity() {
   const { currentUser } = useAuth();
@@ -13,32 +13,32 @@ export default function MyActivity() {
   useEffect(() => {
     if (!currentUser) return;
 
-    // Query: Get posts where author is Me
+    
     const q = query(
       collection(db, "feedback"), 
       where("authorId", "==", currentUser.uid),
       orderBy("createdAt", "desc")
     );
 
-    // The onSnapshot listener fires immediately with initial data (or empty data)
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // Filter client-side for those that HAVE a response
+      
       const respondedOnly = data.filter(item => item.response && item.response.trim() !== "");
       
       setMyFeedbacks(respondedOnly);
-      // IMPORTANT: Once data is received (even if empty), stop loading.
+      
       setLoading(false);
     }, (error) => {
        console.error("Error fetching activity:", error);
-       // Even if there's an error, stop loading so it doesn't get stuck
+       
        setLoading(false);
     });
 
     return unsubscribe;
   }, [currentUser]);
 
-  // STATE 1: LOADING
+  
   if (loading) {
     return (
       <div className="container">
@@ -56,7 +56,7 @@ export default function MyActivity() {
       </p>
 
       <div className="feed-grid">
-        {/* STATE 2: NO DATA */}
+        
         {myFeedbacks.length === 0 ? (
           <div className="card" style={{gridColumn: '1 / -1', textAlign: 'center', padding: '40px'}}>
             <h3>No activity yet</h3>
@@ -68,7 +68,7 @@ export default function MyActivity() {
             </Link>
           </div>
         ) : (
-          // STATE 3: DATA EXISTS
+          
           myFeedbacks.map(item => (
             <div key={item.id} className="card" style={{borderLeftColor: 'var(--success)'}}>
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
@@ -79,7 +79,7 @@ export default function MyActivity() {
               <h3 style={{marginTop: '10px'}}>{item.content}</h3>
               <small>Category: {item.category}</small>
 
-              {/* Response Section */}
+              
               <div className="admin-response">
                 <strong>Admin Response:</strong>
                 <p>{item.response}</p>

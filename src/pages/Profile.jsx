@@ -8,15 +8,14 @@ import Spinner from "../components/Spinner";
 export default function Profile() {
   const { currentUser } = useAuth();
   const [displayName, setDisplayName] = useState("");
-  const [affiliation, setAffiliation] = useState(""); // Now stores Club Name
-  const [officialClubs, setOfficialClubs] = useState([]); // List from DB
+  const [affiliation, setAffiliation] = useState(""); 
+  const [officialClubs, setOfficialClubs] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
       if (currentUser) {
-        // 1. Fetch User Profile
         const userDoc = await getDoc(doc(db, "users", currentUser.uid));
         if (userDoc.exists()) {
           const data = userDoc.data();
@@ -24,10 +23,10 @@ export default function Profile() {
           setAffiliation(data.affiliation || "");
         }
 
-        // 2. Fetch Official Clubs List
+       
         const clubsSnapshot = await getDocs(collection(db, "clubs"));
         const clubsList = clubsSnapshot.docs.map(doc => doc.data().name);
-        setOfficialClubs(clubsList.sort()); // Alphabetical
+        setOfficialClubs(clubsList.sort()); 
       }
       setLoading(false);
     };
@@ -42,7 +41,7 @@ export default function Profile() {
       
       await updateDoc(userRef, {
         displayName: displayName,
-        affiliation: affiliation // Saves selected club
+        affiliation: affiliation 
       });
 
       if (auth.currentUser) {
@@ -56,7 +55,7 @@ export default function Profile() {
     }
   };
 
-  // Replace the loading text div
+  
   if (loading) return (
     <div className="container">
         <div className="form-card">
@@ -82,7 +81,7 @@ export default function Profile() {
           <label><strong>Display Name</strong></label>
           <input type="text" placeholder="e.g. Jane Doe" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
           
-          {/* UPDATED: Dropdown for Club/Affiliation */}
+          
           <label><strong>Select Your Club / Affiliation</strong></label>
           <select value={affiliation} onChange={(e) => setAffiliation(e.target.value)}>
             <option value="">-- Select a Club --</option>

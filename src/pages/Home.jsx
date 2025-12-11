@@ -7,24 +7,24 @@ import { Link } from "react-router-dom";
 export default function Home() {
   const { currentUser, userRole } = useAuth();
   
-  // Data States
+  
   const [feedbacks, setFeedbacks] = useState([]);
   const [recentClubPosts, setRecentClubPosts] = useState([]);
   
-  // Interaction States
+  
   const [commentText, setCommentText] = useState({}); 
   
-  // EDITING STATES (NEW)
+  
   const [editingId, setEditingId] = useState(null); // ID of feedback being edited
   const [editText, setEditText] = useState("");     // Text being typed
   const [editingComment, setEditingComment] = useState(null); // { postId, index }
   const [editCommentText, setEditCommentText] = useState("");
 
-  // Filter & Sort States
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
-  // Admin Check
+  
   const isAdmin = ["admin", "faculty", "master", "tester"].includes(userRole);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function Home() {
     return () => { unsubFeed(); unsubClubs(); };
   }, []);
 
-  // --- Search & Sort Logic ---
+  
   const filteredFeedbacks = feedbacks
     .filter((item) => {
       const term = searchTerm.toLowerCase();
@@ -64,7 +64,7 @@ export default function Home() {
       return dateB - dateA; 
     });
 
-  // --- Actions ---
+  
   const handlePin = async (id, currentStatus) => {
     const ref = doc(db, "feedback", id);
     await updateDoc(ref, { isPinned: !currentStatus });
@@ -90,14 +90,14 @@ export default function Home() {
       comments: arrayUnion({
         text: commentText[id],
         author: currentUser.displayName || currentUser.email,
-        authorId: currentUser.uid, // Save ID to allow editing later
+        authorId: currentUser.uid, 
         date: new Date().toISOString()
       })
     });
     setCommentText({ ...commentText, [id]: "" });
   };
 
-  // --- NEW: EDITING LOGIC (Feedback) ---
+  
   const startEdit = (item) => {
     setEditingId(item.id);
     setEditText(item.content);
@@ -117,7 +117,7 @@ export default function Home() {
     setEditingId(null);
   };
 
-  // --- NEW: EDITING LOGIC (Comments) ---
+  
   const startCommentEdit = (postId, index, currentText) => {
     setEditingComment({ postId, index });
     setEditCommentText(currentText);
@@ -131,7 +131,7 @@ export default function Home() {
       const data = postSnap.data();
       const updatedComments = [...data.comments];
       
-      // Update the specific comment
+      
       updatedComments[index] = {
         ...updatedComments[index],
         text: editCommentText,
@@ -147,7 +147,7 @@ export default function Home() {
     <div className="home-wrapper">
       <div className="container">
         
-        {/* Club Teaser */}
+        
         <h2 className="section-title">🔥 Happening Now (Clubs)</h2>
         <div className="feed-grid">
           {recentClubPosts.map(post => (
@@ -159,10 +159,10 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Feedback Section */}
+        
         <h2 className="section-title" style={{marginBottom: '10px'}}>📢 Campus Feedback</h2>
         
-        {/* Controls */}
+        
         <div style={{ display: 'flex', gap: '15px', marginBottom: '20px', background: 'var(--card)', padding: '15px', borderRadius: '8px', flexWrap: 'wrap' }}>
           <input 
             type="text" 
@@ -181,17 +181,17 @@ export default function Home() {
           </select>
         </div>
 
-        {/* Feed */}
+        
         <div className="feed-grid">
           {filteredFeedbacks.map(item => (
             <div key={item.id} className="card" style={item.isPinned ? {border: '2px solid var(--accent)', background: '#fffcf5'} : {}}>
               
-              {/* Pinned Header */}
+              
               {item.isPinned && (
                 <div style={{marginBottom: '10px', color: 'var(--accent)', fontWeight: 'bold'}}>📌 Pinned Announcement</div>
               )}
 
-              {/* Admin Controls */}
+              
               {isAdmin && (
                 <div style={{marginBottom: '10px', borderBottom: '1px solid #eee', paddingBottom: '5px'}}>
                   <button onClick={() => handlePin(item.id, item.isPinned)} style={{background: 'none', border: 'none', cursor: 'pointer', color: '#666', fontSize: '0.8rem'}}>
@@ -203,7 +203,7 @@ export default function Home() {
               <span className={`badge ${item.status === 'Resolved' ? 'resolved' : 'new'}`}>{item.status}</span>
               <small> | {item.category}</small>
               
-              {/* EDITING UI FOR CONTENT */}
+              
               {editingId === item.id ? (
                 <div style={{marginTop: '10px'}}>
                   <textarea 
@@ -221,28 +221,28 @@ export default function Home() {
                   {item.content}
                   {item.isEdited && <span style={{fontSize: '0.7rem', color: '#888', fontWeight: 'normal', marginLeft: '5px'}}>(edited)</span>}
                   
-                  {/* Edit Icon for Author */}
+                  
                   {currentUser.uid === item.authorId && (
                     <button onClick={() => startEdit(item)} style={{background: 'none', border: 'none', cursor: 'pointer', marginLeft: '10px', fontSize: '1rem'}}>✏️</button>
                   )}
                 </h3>
               )}
               
-              {/* Author */}
+              
               {item.isAnonymous ? (
                 <small style={{fontStyle: 'italic', color: 'var(--text-secondary)'}}>By: Anonymous Student</small>
               ) : (
                 <small>By: {item.authorName} {item.authorAffiliation && `(${item.authorAffiliation})`}</small>
               )}
               
-              {/* Response */}
+              
               {item.response && (
                 <div className="admin-response">
                   <strong>Admin Response:</strong> <p>{item.response}</p>
                 </div>
               )}
 
-              {/* Interactions */}
+              
               <div className="interaction-bar" style={{justifyContent: 'space-between'}}>
                 <div style={{display:'flex', gap:'15px'}}>
                   <button className="like-btn" onClick={() => handleLike("feedback", item.id)}>
@@ -257,25 +257,25 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Comments */}
+              
               <div className="comment-section">
                 <div className="comment-list">
                   {item.comments && item.comments.map((c, index) => (
                     <div key={index} className="comment-item">
                       {editingComment && editingComment.postId === item.id && editingComment.index === index ? (
-                         // EDIT COMMENT MODE
+                         
                          <div style={{display: 'flex', gap: '5px'}}>
                            <input value={editCommentText} onChange={(e) => setEditCommentText(e.target.value)} />
                            <button onClick={() => saveCommentEdit("feedback", item.id, index)} style={{fontSize: '0.8rem'}}>Save</button>
                            <button onClick={() => setEditingComment(null)} style={{fontSize: '0.8rem'}}>X</button>
                          </div>
                       ) : (
-                        // VIEW COMMENT MODE
+                        
                         <div>
                           <strong>{c.author.split('@')[0]}: </strong> {c.text}
                           {c.isEdited && <span style={{fontSize: '0.6rem', color: '#888', marginLeft: '5px'}}>(edited)</span>}
                           
-                          {/* Edit Button for Comment Author */}
+                          
                           {(c.authorId === currentUser.uid || c.author === currentUser.email) && (
                             <button 
                               onClick={() => startCommentEdit(item.id, index, c.text)}

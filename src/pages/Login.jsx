@@ -6,7 +6,7 @@ import {
   signInWithEmailAndPassword
 } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, setDoc, getDoc } from "firebase/firestore"; // <-- Ensure getDoc is imported
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -22,13 +22,13 @@ export default function Login() {
     if (currentUser) navigate("/home");
   }, [currentUser, navigate]);
 
-  // --- Existing Email/Password Handler ---
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       if (isRegistering) {
         const res = await createUserWithEmailAndPassword(auth, email, password);
-        // Create user document
+        
         await setDoc(doc(db, "users", res.user.uid), {
           uid: res.user.uid,
           email,
@@ -44,29 +44,29 @@ export default function Login() {
     }
   };
 
-  // --- NEW: Google Sign-In Handler ---
+  
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if this user already exists in Firestore
+      
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        // If first time logging in, create their profile
+        
         await setDoc(docRef, {
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName, // Google provides their name automatically
-          role: "student", // Default role
-          photoURL: user.photoURL, // Google provides their profile pic
+          displayName: user.displayName, 
+          role: "student", 
+          photoURL: user.photoURL, 
           affiliation: "None"
         });
       }
-      // If they already exist, the useEffect handles redirect
+      
     } catch (error) {
       console.error("Error with Google Sign-In", error);
       alert(error.message);
@@ -89,7 +89,7 @@ export default function Login() {
           <button type="submit" className="primary-btn">{isRegistering ? "Register" : "Login"}</button>
         </form>
 
-        {/* --- NEW: Google Button --- */}
+        
         <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
           <div style={{ flex: 1, height: '1px', background: '#ccc' }}></div>
           <span style={{ padding: '0 10px', color: '#888' }}>OR</span>
@@ -116,7 +116,7 @@ export default function Login() {
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: '20px' }} />
           Sign in with Google
         </button>
-        {/* -------------------------- */}
+        
 
         <p onClick={() => setIsRegistering(!isRegistering)} style={{ marginTop: '20px', cursor: 'pointer', color: 'var(--primary)', textAlign: 'center', fontWeight: 'bold' }}>
           {isRegistering ? "Already have an account? Login" : "No account? Register"}
