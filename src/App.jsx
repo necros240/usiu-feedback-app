@@ -5,7 +5,6 @@ import { ThemeProvider } from "./context/ThemeContext";
 import Navbar from "./components/Navbar";
 import "./App.css";
 
-// Pages
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import SubmitFeedback from "./pages/SubmitFeedback";
@@ -21,7 +20,6 @@ import Spinner from "./components/Spinner";
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { currentUser, userRole, loading } = useAuth();
   
-  // Use Spinner instead of div text
   if (loading) return <Spinner fullScreen={true} />;
   
   if (!currentUser) return <Navigate to="/" />;
@@ -33,7 +31,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 const PublicRoute = () => {
     const { currentUser, loading } = useAuth();
     
-    // Use Spinner instead of div text
     if (loading) return <Spinner fullScreen={true} />;
     
     if (currentUser) return <Navigate to="/home" />;
@@ -46,12 +43,11 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Navbar />
-          <div style={{minHeight: '80vh'}}> {/* Ensure content pushes footer down */}
+          <div style={{minHeight: '80vh'}}> 
             <Routes>
               <Route path="/" element={<PublicRoute />} />
               <Route path="/login" element={<Login />} />
               
-              {/* NEW PRIVACY ROUTE (Publicly accessible) */}
               <Route path="/privacy" element={<PrivacyPolicy />} /> 
 
               <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
@@ -76,7 +72,6 @@ export default function App() {
             </Routes>
           </div>
 
-          {/* GLOBAL FOOTER */}
           <footer style={{textAlign: 'center', padding: '20px', color: '#888', fontSize: '0.8rem', borderTop: '1px solid var(--border)', marginTop: 'auto'}}>
              &copy; {new Date().getFullYear()} USIU-Africa | <a href="/privacy" style={{color: 'var(--primary)', textDecoration: 'none'}}>Privacy Policy</a> | Built by Group 12
           </footer>
